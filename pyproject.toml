@@ -1,0 +1,56 @@
+[project]
+name = "todo-integration-ml"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+force_single_line = false
+combine_as_imports = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = [
+  "E", "F", "I", "UP", "B", "N", "Q", "W", "C4", "T20", "RET", "SIM", "RUF"
+]
+ignore = [
+  "D",  # docstring rules off for now
+]
+fix = true
+
+[tool.ruff.lint.isort]
+known-first-party = ["todo-integration-ml"]
+
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unused_configs = true
+pretty = true
+show_error_codes = true
+exclude = [
+  "data/.*",
+  "logs/.*",
+  "docker/.*",
+  ".venv/.*",
+]
+
+[tool.pytest.ini_options]
+addopts = "-q --cov=./ --cov-report=term-missing --no-header"
+testpaths = ["tests"]
+xfail_strict = true
+filterwarnings = [
+  "error::DeprecationWarning",
+  "ignore::UserWarning",
+]
