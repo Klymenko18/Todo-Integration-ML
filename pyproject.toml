@@ -16,16 +16,16 @@ combine_as_imports = true
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+fix = true
+
+[tool.ruff.lint]
 select = [
   "E", "F", "I", "UP", "B", "N", "Q", "W", "C4", "T20", "RET", "SIM", "RUF"
 ]
-ignore = [
-  "D",  # docstring rules off for now
-]
-fix = true
+ignore = ["D"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["todo-integration-ml"]
+known-first-party = ["todo_integration_ml"]
 
 [tool.mypy]
 python_version = "3.11"
