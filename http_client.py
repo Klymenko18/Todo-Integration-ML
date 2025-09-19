@@ -1,32 +1,21 @@
-import time
+from __future__ import annotations
+
+from collections.abc import Mapping
 from typing import Any
 
 import httpx
 
-from settings import get_settings
 
-_settings = get_settings()
+class HttpClient:
+    def __init__(self, base_url: str, timeout: float = 10.0) -> None:
+        self._base_url = base_url.rstrip("/")
+        self._timeout = timeout
+        self._client = httpx.Client(base_url=self._base_url, timeout=self._timeout)
 
+    def get_json(self, path: str, params: Mapping[str, Any] | None = None) -> Any:
+        resp = self._client.get(path, params=params)
+        resp.raise_for_status()
+        return resp.json()
 
-def fetch_json(url: str) -> list[dict[str, Any]]:
-    """HTTP GET with timeouts & simple retry backoff."""
-    timeout = _settings.http_timeout
-    max_retries = _settings.http_max_retries
-    last_exc: Exception | None = None
-
-    for attempt in range(max_retries + 1):
-        try:
-            with httpx.Client(timeout=timeout) as client:
-                resp = client.get(url)
-                resp.raise_for_status()
-                data = resp.json()
-                if not isinstance(data, list):
-                    raise ValueError("Expected JSON array")
-                return data  # type: ignore[return-value]
-        except Exception as exc:
-            last_exc = exc
-            if attempt == max_retries:
-                raise
-            time.sleep(min(2**attempt, 8))
-    assert last_exc
-    raise last_exc
+    def close(self) -> None:
+        self._client.close()

@@ -1,21 +1,17 @@
-from functools import lru_cache
-from typing import Literal
+from __future__ import annotations
 
-from joblib import load
-
-from settings import get_settings
-
-__all__ = ["predict_priority"]
-
-_settings = get_settings()
+from collections.abc import Sequence
+from typing import Any, cast
 
 
-@lru_cache
-def _model():
-    return load(_settings.model_path)
+def _get_model() -> Any:
+    import importlib
+
+    joblib = importlib.import_module("joblib")
+    return joblib.load("artifacts/model.joblib")
 
 
-def predict_priority(text: str) -> Literal["high", "low"]:
-    model = _model()
-    pred = model.predict([text])[0]
-    return "high" if str(pred).lower() == "high" else "low"
+def predict(features: Sequence[float]) -> float:
+    model: Any = _get_model()
+    y_pred: Any = model.predict([list(features)])
+    return float(cast(Sequence[float], y_pred)[0])
