@@ -1,22 +1,20 @@
 from __future__ import annotations
 
-from typing import Any
+from celery import Celery
+from settings import get_settings
 
+s = get_settings()
 
-def make_celery(
-    broker_url: str,
-    backend_url: str | None = None,
-    app_name: str = "app",
-) -> Any:
-    import importlib
+# ЯВНО підключаємо модуль(і) із задачами
+# якщо у тебе інша назва файла з задачами — додай/заміни тут
+celery_app = Celery(
+    "todo_integration_ml",
+    broker=s.celery_broker_url,
+    backend=s.celery_result_backend,
+    include=["task_fetch_users"],
+)
 
-    celery_mod = importlib.import_module("celery")
-    Celery = celery_mod.Celery
-    celery = Celery(app_name, broker=broker_url, backend=backend_url or broker_url)
-    celery.conf.task_serializer = "json"
-    celery.conf.result_serializer = "json"
-    celery.conf.accept_content = ["json"]
-    return celery
-
-
-celery_app = make_celery(broker_url="redis://localhost:6379/0")
+celery_app.conf.task_serializer = "json"
+celery_app.conf.result_serializer = "json"
+celery_app.conf.accept_content = ["json"]
+celery_app.conf.task_default_queue = "default"

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, Optional
 
 import httpx
 
@@ -19,3 +19,16 @@ class HttpClient:
 
     def close(self) -> None:
         self._client.close()
+
+
+def fetch_json(
+    url: str,
+    *,
+    params: Optional[Mapping[str, Any]] = None,
+    timeout: float = 10.0,
+) -> Any:
+
+    with httpx.Client(timeout=timeout) as client:
+        resp = client.get(url, params=params)
+        resp.raise_for_status()
+        return resp.json()
