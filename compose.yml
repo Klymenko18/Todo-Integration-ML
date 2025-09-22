@@ -1,0 +1,62 @@
+name: todo_integration_ml
+
+services:
+  redis:
+    image: redis:7.4-alpine
+    container_name: timl-redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: timl-api
+    env_file: [.env]
+    ports: ["8000:8000"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      SERVICE: api
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - ./data:/app/data
+      - ./run:/app/run
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: timl-worker
+    env_file: [.env]
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      SERVICE: worker
+    volumes:
+      - ./data:/app/data
+      - ./run:/app/run
+
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: timl-beat
+    env_file: [.env]
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      SERVICE: beat
+    volumes:
+      - ./data:/app/data
+      - ./run:/app/run
